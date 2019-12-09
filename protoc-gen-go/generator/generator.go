@@ -2049,16 +2049,16 @@ func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLev
 
 // generateInternalStructFields just adds the XXX_<something> fields to the message struct.
 func (g *Generator) generateInternalStructFields(mc *msgCtx, topLevelFields []topLevelField) {
-	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\"`") // prevent unkeyed struct literals
+	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\" xorm:\"-\"`") // prevent unkeyed struct literals
 	if len(mc.message.ExtensionRange) > 0 {
 		messageset := ""
 		if opts := mc.message.Options; opts != nil && opts.GetMessageSetWireFormat() {
 			messageset = "protobuf_messageset:\"1\" "
 		}
-		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\"`")
+		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\" xorm:\"-\"`")
 	}
-	g.P("XXX_unrecognized\t[]byte `json:\"-\"`")
-	g.P("XXX_sizecache\tint32 `json:\"-\"`")
+	g.P("XXX_unrecognized\t[]byte `json:\"-\" xorm:\"-\"`")
+	g.P("XXX_sizecache\tint32 `json:\"-\" xorm:\"-\"`")
 
 }
 
@@ -2264,7 +2264,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			of := oneofField{
 				fieldCommon: fieldCommon{
 					goName:     fname,
-					getterName: "Get"+fname,
+					getterName: "Get" + fname,
 					goType:     dname,
 					tags:       tag,
 					protoName:  odp.GetName(),
@@ -2304,6 +2304,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 
 				tag += fmt.Sprintf(" protobuf_key:%s protobuf_val:%s", keyTag, valTag)
 			}
+			tag += fmt.Sprintf(" xorm:%q", "json")
 		}
 
 		fieldDeprecated := ""
