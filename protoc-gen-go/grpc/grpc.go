@@ -283,6 +283,11 @@ func (g *grpc) generateService(file *generator.FileDescriptor, service *pb.Servi
 	g.P("Metadata: \"", file.GetName(), "\",")
 	g.P("}")
 	g.P()
+
+	g.P("func Get", serviceDescVar, "() *", grpcPkg, ".ServiceDesc {")
+	g.P("return &", serviceDescVar)
+	g.P("}")
+	g.P()
 }
 
 // generateUnimplementedServer creates the unimplemented server struct
