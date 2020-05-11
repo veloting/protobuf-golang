@@ -2310,6 +2310,10 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			tag += fmt.Sprintf(" xorm:%q", "json")
 		}
 
+		if isRepeated(field) == true {
+			mapFlag = true
+		}
+
 		if mapFlag == true {
 			tag += " redis:-"
 		} else {
