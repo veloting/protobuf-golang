@@ -2049,16 +2049,16 @@ func (g *Generator) generateDefaultConstants(mc *msgCtx, topLevelFields []topLev
 
 // generateInternalStructFields just adds the XXX_<something> fields to the message struct.
 func (g *Generator) generateInternalStructFields(mc *msgCtx, topLevelFields []topLevelField) {
-	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\" xorm:\"-\"`") // prevent unkeyed struct literals
+	g.P("XXX_NoUnkeyedLiteral\tstruct{} `json:\"-\" xorm:\"-\" redis:\"-\"`") // prevent unkeyed struct literals
 	if len(mc.message.ExtensionRange) > 0 {
 		messageset := ""
 		if opts := mc.message.Options; opts != nil && opts.GetMessageSetWireFormat() {
 			messageset = "protobuf_messageset:\"1\" "
 		}
-		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\" xorm:\"-\"`")
+		g.P(g.Pkg["proto"], ".XXX_InternalExtensions `", messageset, "json:\"-\" xorm:\"-\" redis:\"-\"`")
 	}
-	g.P("XXX_unrecognized\t[]byte `json:\"-\" xorm:\"-\"`")
-	g.P("XXX_sizecache\tint32 `json:\"-\" xorm:\"-\"`")
+	g.P("XXX_unrecognized\t[]byte `json:\"-\" xorm:\"-\" redis:\"-\"`")
+	g.P("XXX_sizecache\tint32 `json:\"-\" xorm:\"-\" redis:\"-\"`")
 
 }
 
@@ -2276,6 +2276,8 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			oFields[*field.OneofIndex] = &of
 		}
 
+		mapFlag := false
+
 		if *field.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
 			desc := g.ObjectNamed(field.GetTypeName())
 			if d, ok := desc.(*Descriptor); ok && d.GetOptions().GetMapEntry() {
@@ -2303,8 +2305,19 @@ func (g *Generator) generateMessage(message *Descriptor) {
 				mapFieldTypes[field] = typename // record for the getter generation
 
 				tag += fmt.Sprintf(" protobuf_key:%s protobuf_val:%s", keyTag, valTag)
+				mapFlag = true
 			}
 			tag += fmt.Sprintf(" xorm:%q", "json")
+		}
+
+		if isRepeated(field) == true {
+			mapFlag = true
+		}
+
+		if mapFlag == true {
+			tag += " redis:-"
+		} else {
+			tag += fmt.Sprintf(" redis:%q", jsonName)
 		}
 
 		fieldDeprecated := ""
