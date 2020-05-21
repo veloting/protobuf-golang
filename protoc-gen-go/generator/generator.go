@@ -2305,9 +2305,9 @@ func (g *Generator) generateMessage(message *Descriptor) {
 				mapFieldTypes[field] = typename // record for the getter generation
 
 				tag += fmt.Sprintf(" protobuf_key:%s protobuf_val:%s", keyTag, valTag)
-				mapFlag = true
 			}
 			tag += fmt.Sprintf(" xorm:%q", "json")
+			mapFlag = true
 		}
 
 		if isRepeated(field) == true {
@@ -2315,7 +2315,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		}
 
 		if mapFlag == true {
-			tag += " redis:-"
+			tag += " redis:\"-\""
 		} else {
 			tag += fmt.Sprintf(" redis:%q", jsonName)
 		}
